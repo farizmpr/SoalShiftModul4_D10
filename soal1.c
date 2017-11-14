@@ -59,15 +59,31 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	return 0;
 }
 
+static int xmp_rename(const char *from, const char *to)
+{
+	int res;
+
+	res = rename(from, to);
+	if (res == -1)
+		return -errno;
+
+	return 0;
+}
+
 static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 {
-	char *ret,*temp;
+	char *ret;
 	const char dot = '.';
 	ret = strrchr(path,dot);
 	if(strcmp(ret,".pdf")==0 || strcmp(ret,".doc")==0 || strcmp(ret,".txt")==0)
 	{
 		system("zenity --error --text='Terjadi kesalahan! File berisi konten berbahaya.'");
+		char name[100], newname[100];
+		sprintf(name,"%s%s",dirpath,path);
+		sprintf(newname,"%s%s.ditandai",dirpath,path);
+		rename(name,newname);		
+
 		return 0;
 	}
   	char fpath[1000];
@@ -97,6 +113,7 @@ static struct fuse_operations xmp_oper = {
 	.getattr	= xmp_getattr,
 	.readdir	= xmp_readdir,
 	.read		= xmp_read,
+	.rename		= xmp_rename,
 };
 
 int main(int argc, char *argv[])
