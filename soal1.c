@@ -103,6 +103,17 @@ static int xmp_unlink(const char *path)
 	return 0;
 }
 
+static int xmp_chmod(const char *path, mode_t mode)
+{
+	int res;
+
+	res = chmod(path, mode);
+	if (res == -1)
+		return -errno;
+
+	return 0;
+}
+
 
 static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
@@ -125,6 +136,8 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 		sprintf(pathnama,"%s/rahasia/%s",dirpath,namafile);
 		xmp_link(newname,pathnama);
 		xmp_unlink(newname);
+
+		xmp_chmod(pathnama,000);
 
 		return 0;
 	}
@@ -159,6 +172,7 @@ static struct fuse_operations xmp_oper = {
 	.mkdir		= xmp_mkdir,
 	.link		= xmp_link,
 	.unlink		= xmp_unlink,
+	.chmod		= xmp_chmod,
 };
 
 int main(int argc, char *argv[])
