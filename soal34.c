@@ -110,7 +110,7 @@ static int xmp_mknod();
 
 static int xmp_truncate(const char *path, off_t size)
 {
-	char fpath[1000], namafile[100];
+	char fpath[1000];
 	if(strcmp(path,"/") == 0)
 	{
 		path=dirpath;
@@ -118,7 +118,6 @@ static int xmp_truncate(const char *path, off_t size)
 	}
 	else 
 	{
-		sprintf(namafile,"%s",path);
 		sprintf(fpath, "%s%s",dirpath,path);
 	}
 
@@ -126,7 +125,7 @@ static int xmp_truncate(const char *path, off_t size)
 	sprintf(pathsimpanan,"%s/simpanan",dirpath);
 	xmp_mkdir(pathsimpanan,0755);
 	
-	sprintf(copypath,"%s%s",pathsimpanan,namafile);
+	sprintf(copypath,"%s%s.copy",pathsimpanan,path);
 	xmp_mknod(copypath,0644);
 
 	int res;
@@ -134,7 +133,6 @@ static int xmp_truncate(const char *path, off_t size)
 	res = truncate(copypath, size);
 	if (res == -1)
 		return -errno;
-
 	return 0;
 }
 
@@ -170,7 +168,7 @@ static int xmp_write(const char *path, const char *buf, size_t size,
 	else sprintf(fpath, "%s%s",dirpath,path);
 
 	char writepath[100];
-	sprintf(writepath,"%s/simpanan/%s",dirpath,path);	
+	sprintf(writepath,"%s/simpanan/%s.copy",dirpath,path);	
 
 	int fd;
 	int res;
