@@ -59,6 +59,17 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 	return 0;
 }
 
+static int xmp_chmod(const char *path, mode_t mode)
+{
+	int res;
+
+	res = chmod(path, mode);
+	if (res == -1)
+		return -errno;
+
+	return 0;
+}
+
 static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 {
@@ -68,6 +79,8 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 	if(strcmp(ret,".copy")==0)
 	{
 		system("zenity --error --text='File yang anda buka adalah file hasil salinan. File tidak bisa diubah maupun disalin kembali!'");
+		xmp_chmod(path,444);
+		
 		return 0;
 	}
   	char fpath[1000];
@@ -204,6 +217,7 @@ static struct fuse_operations xmp_oper = {
 	.truncate	= xmp_truncate,
 	.read		= xmp_read,
 	.write		= xmp_write,
+	.chmod		= xmp_chmod,
 	
 };
 
