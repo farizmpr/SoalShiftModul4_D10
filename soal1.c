@@ -70,6 +70,40 @@ static int xmp_rename(const char *from, const char *to)
 	return 0;
 }
 
+static int xmp_mkdir(const char *path, mode_t mode)
+{
+	int res;
+
+	res = mkdir(path, mode);
+	if (res == -1)
+		return -errno;
+
+	return 0;
+}
+
+static int xmp_link(const char *from, const char *to)
+{
+	int res;
+
+	res = link(from, to);
+	if (res == -1)
+		return -errno;
+
+	return 0;
+}
+
+static int xmp_unlink(const char *path)
+{
+	int res;
+
+	res = unlink(path);
+	if (res == -1)
+		return -errno;
+
+	return 0;
+}
+
+
 static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 {
@@ -79,10 +113,18 @@ static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 	if(strcmp(ret,".pdf")==0 || strcmp(ret,".doc")==0 || strcmp(ret,".txt")==0)
 	{
 		system("zenity --error --text='Terjadi kesalahan! File berisi konten berbahaya.'");
-		char name[100], newname[100];
+		char name[100], newname[100], pathrahasia[100], pathnama[100], namafile[100];
 		sprintf(name,"%s%s",dirpath,path);
 		sprintf(newname,"%s%s.ditandai",dirpath,path);
-		rename(name,newname);		
+		rename(name,newname);
+		
+		sprintf(pathrahasia,"%s/rahasia",dirpath);
+		xmp_mkdir(pathrahasia,0755);
+		
+		sprintf(namafile,"%s.ditandai",path);
+		sprintf(pathnama,"%s/rahasia/%s",dirpath,namafile);
+		xmp_link(newname,pathnama);
+		xmp_unlink(newname);
 
 		return 0;
 	}
@@ -114,6 +156,9 @@ static struct fuse_operations xmp_oper = {
 	.readdir	= xmp_readdir,
 	.read		= xmp_read,
 	.rename		= xmp_rename,
+	.mkdir		= xmp_mkdir,
+	.link		= xmp_link,
+	.unlink		= xmp_unlink,
 };
 
 int main(int argc, char *argv[])
