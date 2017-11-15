@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <dirent.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <sys/time.h>
 
@@ -61,6 +62,14 @@ static int xmp_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
 static int xmp_read(const char *path, char *buf, size_t size, off_t offset,
 		    struct fuse_file_info *fi)
 {
+	char *ret;
+	const char dot = '.';
+	ret = strrchr(path,dot);
+	if(strcmp(ret,".copy")==0)
+	{
+		system("zenity --error --text='File yang anda buka adalah file hasil salinan. File tidak bisa diubah maupun disalin kembali!'");
+		return 0;
+	}
   	char fpath[1000];
 	if(strcmp(path,"/") == 0)
 	{
